@@ -1,0 +1,891 @@
+<!doctype html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <title>SpaceX Falcon Heavy</title>
+    <script src="threebox.js" type="text/javascript"></script>
+    <script type='text/javascript' src='tween.js'></script>
+    <script src="config.js"></script>
+    <script src="http://alexan0308.github.io/threejs/examples/js/controls/EventsControls.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
+    <script src="DDSLoader.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.39.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.39.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        /* The Modal (background) */
+        .modal {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            /* Stay in place */
+            z-index: 1001;
+            /* Sit on top */
+            padding-top: 100px;
+            /* Location of the box */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 690px;
+            /* Full width */
+            height: 550px;
+            /* Full height */
+        }
+        /* Modal Content */
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 90%;
+            height: 70%;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            -webkit-animation-name: animatetop;
+            -webkit-animation-duration: 0.4s;
+            animation-name: animatetop;
+            animation-duration: 0.4s overflow-x: hidden;
+        }
+        /* Add Animation */
+        @-webkit-keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+        @keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+        /* The Close Button */
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-header {
+            padding: 2px 16px;
+            background-color: #5cb85c;
+            color: white;
+        }
+        .modal-footer {
+            padding: 2px 16px;
+            background-color: #5cb85c;
+            color: white;
+        }
+        #loading {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            background: #1e1e1e;
+            overflow: hidden;
+            width: 100%;
+            z-index: 999999999999999999;
+        }
+        #loadingtext {
+            color: #c6c6c6;
+            position: absolute;
+            top: calc(50% + 60px);
+            left: calc(50% - 75px);
+            z-index: 999999999999999999;
+        }
+        #c3d {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 100px;
+            margin-top: -50px;
+            /* Half the height */
+            margin-left: -50px;
+            /* Half the width */
+            z-index: 999999999999999999;
+        }
+        #layers {
+            position: absolute;
+            margin-left: auto;
+            margin-right: 10px;
+            bottom:32px;
+            width:130px;
+            left: 0;
+            right: 0;
+            z-index: 9999999999999;
+        }
+        .imgContainer {
+            float: left;
+        }
+        #menu {
+            position: absolute;
+            margin-top: 10px;
+            right: 0;
+            z-index: 9999;
+        }
+        #launch {
+            position: relative;
+            top: 1px;
+            left: 10px;
+            cursor: pointer;
+        }
+        .post-video-overlay-lg {
+            font-family: "Georgia, serif";
+            font-family: "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif;
+            position: absolute;
+            top: 2px;
+            left: 0;
+            font-size: 18px;
+            color: #E5E5E5;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+        }
+        #post-video-overlay-lg {
+            position: absolute;
+            top: 50%;
+            left: 80%;
+            transform: translate(-50%, -50%);
+        }
+        #two {
+            position: absolute;
+            -webkit-box-shadow: -9px 10px 5px -7px rgba(0, 0, 0, 0.18);
+            -moz-box-shadow: -9px 10px 5px -7px rgba(0, 0, 0, 0.18);
+            box-shadow: -9px 10px 5px -7px rgba(0, 0, 0, 0.18);
+            margin-top: 40px;
+            right: 0;
+            display: none;
+            z-index: 9999;
+        }
+        #three {
+            -webkit-box-shadow: -9px 10px 5px -7px rgba(0, 0, 0, 0.18);
+            -moz-box-shadow: -9px 10px 5px -7px rgba(0, 0, 0, 0.18);
+            box-shadow: -9px 10px 5px -7px rgba(0, 0, 0, 0.18);
+            position: absolute;
+            display: none;
+            margin-top: 188px;
+            right: 0;
+            z-index: 9999;
+        }
+        #one {}
+    </style>
+</head>
+<body>
+    <div id="menu">
+        <div class="post-video-overlay-lg">
+            <span id="launch">LAUNCH</span>
+        </div>
+        <img id="one" src="img/1.png">
+    </div>
+    <div id="layers">
+        <a href="javascript:;" class="toggle" id="menu-toggle1">
+            <div class="imgContainer">
+                <img id="m" src="buttons/map1.png">
+            </div>
+            <div class="imgContainer">
+                <img id="s" src="buttons/satellite2.png">
+            </div>
+        </a>
+    </div>
+    <div id='map' class='map'></div>
+    <div id="loading">
+        <img id="c3d" src="c3d.gif">
+        <span id="loadingtext">Loading...<span>
+<div>
+    <script>
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+
+} else {
+    top.location.href = "index.html";
+}
+var launched=0;
+var k=0.1;
+var x=0.000290;
+var y=0.000750;
+var anis=16;
+var scale=1.005;
+var mainPosition = [-80.5774+x,28.56218+y];
+    if(!config) console.error("Config not set! Make a copy of 'config_template.js', add in your access token, and save the file as 'config.js'.");
+    mapboxgl.accessToken = config.accessToken;
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/satellite-v9',
+	  center: [-80.5774,28.56218 ],
+      zoom: 15.95,
+      pitch: 60,
+      heading: 41,
+      hash: true,
+      maxZoom: 19
+    });
+var highlighted = [];
+    map.on("load", function() {
+	var smap=0;
+	var ssat=1;
+	function setmap(){
+	if(smap==0){
+	map.setStyle('mapbox://styles/mapbox/streets-v9');
+	document.getElementById("m").src="buttons/map2.png";
+	document.getElementById("s").src="buttons/satellite1.png";
+	smap=1; ssat=0;
+	}
+	}
+	function setsat(){
+	if(smap==1){
+	map.setStyle('mapbox://styles/mapbox/satellite-v9');
+	document.getElementById("m").src="buttons/map1.png";
+	document.getElementById("s").src="buttons/satellite2.png";
+	smap=0; ssat=1;
+	}
+		}
+	document.getElementById("m").addEventListener("click",function () {
+ setmap()
+	});
+		document.getElementById("s").addEventListener("click",function () {
+ setsat()
+	});
+        // Initialize threebox
+        window.threebox = new Threebox(map);
+        threebox.setupDefaultLights();
+THREE.Cache.enabled = true;
+THREE.DefaultLoadingManager.onStart = function ( url, itemsLoaded, itemsTotal ) {
+document.getElementById("loadingtext").innerHTML = 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.';
+};
+THREE.DefaultLoadingManager.onLoad = function ( ) {
+	document.getElementById("loadingtext").innerHTML ='Loading Complete!';
+	var tween = new TWEEN.Tween(document.getElementById("loading").style).to( { opacity: 0.1 } ,1100).start();
+        tween.easing(TWEEN.Easing.Cubic.Out);
+        tween.yoyo(true);
+		tween.onComplete(function() {
+		//console.log('done!')
+		document.getElementById("loading").style.zIndex=-100;
+});
+};
+THREE.DefaultLoadingManager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
+document.getElementById("loadingtext").innerHTML = 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.';	
+document.getElementById("loading").style.opacity= 1;
+};
+THREE.DefaultLoadingManager.onError = function ( url ) {
+	document.getElementById("loadingtext").innerHTML ='There was an error loading ' + url;
+};
+        loader = new THREE.JSONLoader();
+         loader.load("model/b1/b1.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/b1/b1.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+        loader.load("model/bt/bt1.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/bt/bt.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+            material.alphaMap = new THREE.TextureLoader().load("model/bt/bt-a.jpg");
+            material.alphaTest = 0.2;
+            material.transparent = true;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        }); 
+        loader.load("model/bt/bt2.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/bt/bt.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+            material.alphaMap = new THREE.TextureLoader().load("model/bt/bt-a.jpg");
+            material.alphaTest = 0.2;
+            material.transparent = true;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+        loader.load("model/bt/bt3.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/bt/bt.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+            material.alphaMap = new THREE.TextureLoader().load("model/bt/bt-a.jpg");
+            material.alphaTest = 0.2;
+            material.transparent = true;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+        loader.load("model/bt/bt4.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/bt/bt.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+            material.alphaMap = new THREE.TextureLoader().load("model/bt/bt-a.jpg");
+            material.alphaTest = 0.2;
+            material.transparent = true;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+        loader.load("model/el1/el1.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el1/el1.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+            material.alphaMap = new THREE.TextureLoader().load("model/el1/el1-a.jpg");
+            material.alphaTest = 0.4;
+            material.transparent = true;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        }); 
+    loader.load("model/el2/el2.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el2/el2.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+        loader.load("model/el3/el3.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el3/el3.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+       loader.load("model/el4/el4.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el4/el4.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+        loader.load("model/el5/el5.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el5/el5.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+           loader.load("model/el8/el8.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el8/el8.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+    loader.load("model/el9/el9.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el9/el9.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+    loader.load("model/el10/el10.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el10/el10.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+    loader.load("model/el11/el11.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el11/el11.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+    loader.load("model/el12/el12.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el11/el11.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+    loader.load("model/el13/el13.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el11/el11.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+    loader.load("model/el14/el14.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el11/el11.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+         loader.load("model/el15/el15.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/el15/el15.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+        loader.load("model/flame/flame.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshBasicMaterial( {
+    map: THREE.ImageUtils.loadTexture('model/flame.png')
+});
+            material.map.wrapS = THREE.RepeatWrapping;
+            material.map.wrapT = THREE.RepeatWrapping;
+           // material.map.repeat.set( 10, 10 );
+			material.side = THREE.DoubleSide;
+            material.alphaTest = 0.1;
+            material.transparent = true;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="flame";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+        var gear=0;
+        loader.load("model/fh/fh.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/fh/fh.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom1 = new THREE.Mesh( geometry, material );
+            geom1.name="fh";
+            threebox.addAtCoordinate(geom1, mainPosition, {scaleToLatitude: true, preScale: scale});
+            geom1.position.setX(geom1.position.x-2.4);
+            geom1.position.setY(geom1.position.y+3.5);
+        });
+        loader.load("model/ground/ground.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/ground/ground.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+        loader.load("model/house/house.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/house/house.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+    loader.load("model/house2/house2.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/house2/house2.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+      loader.load("model/radar/radar1.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/radar/radar.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });
+        loader.load("model/radar/radar2.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/radar/radar.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });   
+        loader.load("model/start/start.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/start/start.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+            material.alphaMap = new THREE.TextureLoader().load("model/start/start-a.jpg");
+            material.alphaTest = 0.4;
+            material.transparent = true;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        }); 
+           loader.load("model/start2/start2.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/start2/start2.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        });  
+    loader.load("model/tower/t1.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/tower/t.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+            material.alphaMap = new THREE.TextureLoader().load("model/tower/t-a.jpg");
+            material.alphaTest = 0.4;
+            material.transparent = true;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        }); 
+      loader.load("model/tower/t2.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/tower/t.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+            material.alphaMap = new THREE.TextureLoader().load("model/tower/t-a.jpg");
+            material.alphaTest = 0.4;
+            material.transparent = true;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        }); 
+      loader.load("model/tower/t3.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/tower/t.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+            material.alphaMap = new THREE.TextureLoader().load("model/tower/t-a.jpg");
+            material.alphaTest = 0.4;
+            material.transparent = true;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        }); 
+      loader.load("model/tower/t4.json", function(geometry, materials) {
+            geometry.rotateY((90/360)*4*Math.PI-0.01);
+            geometry.rotateX((90/360)*2*Math.PI);
+            var material = new THREE.MeshPhongMaterial(); 
+			material.emissive=new THREE.Color(0xffffff );
+			material.color=new THREE.Color(0x0a0a0a);
+			material.emissiveMap=new THREE.TextureLoader().load("model/tower/t.jpg");
+			material.shading = THREE.FlatShading;
+			material.side = THREE.DoubleSide;
+            material.alphaMap = new THREE.TextureLoader().load("model/tower/t-a.jpg");
+            material.alphaTest = 0.4;
+            material.transparent = true;
+			material.anisotropy = anis;
+			geometry.castShadow = true;
+			geometry.receiveShadow = false;
+            geom = new THREE.Mesh( geometry, material );
+            geom.name="ground";
+            threebox.addAtCoordinate(geom, mainPosition, {scaleToLatitude: true, preScale: scale}); geom.position.setX( geom.position.x-2.4); geom.position.setY( geom.position.y+3.5);
+        }); 
+		var clicked=0;
+	var audio = new Audio('model/misc.mp3');	
+	  var timeleft = 24;	
+        var timecheck=24;
+		function go(){
+            if(launched==0){
+            if(timecheck <= 0){
+             
+                         
+                launched=1;
+                document.getElementById('launch').innerHTML= "IGNITION"
+                 var tween = new TWEEN.Tween( threebox.scene.getObjectByName( "fh").position).to({z:300},2900).start();
+            tween.easing(TWEEN.Easing.Exponential.In);
+            tween.yoyo(true);
+             tween.onComplete(function(){		
+				//	launched=0;	
+                   map.flyTo({
+           zoom: 14
+    });    
+                 launched=1;
+                 var tween = new TWEEN.Tween( threebox.scene.getObjectByName( "fh").position).to({z:300000},70000).start();
+            tween.easing(TWEEN.Easing.Exponential.In);
+            tween.yoyo(true);
+             tween.onComplete(function(){	launched=0; $( "#menu" ).fadeOut( "slow", function() {}); 	});      
+						});   
+            }
+            }
+        }
+     
+             function launch(){
+                
+             audio.play();     
+var downloadTimer = setInterval(function(){
+    if(timeleft<11){
+    document.getElementById('launch').innerHTML= "00:00:0"+ --timeleft;
+    }
+    else{document.getElementById('launch').innerHTML= "00:00:"+ --timeleft;}
+    timecheck=timecheck-1;
+  if(timeleft <= 0)
+    clearInterval(downloadTimer);  
+    go();
+},1000);      
+   }                
+  document.getElementById('launch').onclick = function()
+   {      if(clicked==0){
+      launch()
+   clicked=1;
+   }
+  }
+    });
+		 requestAnimationFrame(animate);
+          function animate(time){
+            requestAnimationFrame(animate);
+            TWEEN.update(time);
+              if(launched==1){
+              threebox.scene.getObjectByName( "flame").position.setZ(threebox.scene.getObjectByName( "fh").position.z)}
+              else{try { threebox.scene.getObjectByName( "flame").position.setZ(-100000000000000)}catch(err) {}}
+              
+             // if(threebox.scene.getObjectByName( "flame").material.map.offset.y>0.8){threebox.scene.getObjectByName( "flame").material.map.offset.y=0}
+              try {
+               threebox.scene.getObjectByName( "flame").material.map.offset.y =threebox.scene.getObjectByName( "flame").material.map.offset.y+ 0.04;}
+              catch(err) {}
+          }
+    </script>
+</body>
